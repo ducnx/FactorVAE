@@ -1,9 +1,6 @@
 import torch
 from torch import nn
 
-from flatten_layer import Flatten
-from reshape_layer import Reshape
-
 
 class Module_dSprites_VAE(nn.Module):
     def __init__(self, channels=1, latent_dim=10, filters_first_layer=32):
