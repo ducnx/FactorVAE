@@ -9,6 +9,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torchvision.utils import make_grid, save_image
 
+from model_dse import Module_dSprites_VAE
 from utils import DataGather, mkdirs, grid2gif
 from ops import recon_loss, kl_divergence, permute_dims
 from model import FactorVAE1, FactorVAE2, Discriminator
@@ -45,7 +46,8 @@ class Solver(object):
         self.beta2_D = args.beta2_D
 
         if args.dataset == 'dsprites':
-            self.VAE = FactorVAE1(self.z_dim).to(self.device)
+            # self.VAE = FactorVAE1(self.z_dim).to(self.device)
+            self.VAE = Module_dSprites_VAE(channels=1, latent_dim=self.z_dim, filters_first_layer=32).to(self.device)
             self.nc = 1
         else:
             self.VAE = FactorVAE2(self.z_dim).to(self.device)
