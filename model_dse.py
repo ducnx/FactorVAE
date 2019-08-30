@@ -14,12 +14,15 @@ class Module_dSprites_VAE(nn.Module):
 
     def init_weight(self):
         for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):
+            if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d)):
                 nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 1)
-            elif isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Linear):
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, (nn.Linear, nn.Conv2d, nn.ConvTranspose2d)):
                 nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
-        nn.init.xavier_normal_(self.decode[-2].weight, nn.init.calculate_gain('sigmoid'))
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+        # nn.init.xavier_normal_(self.decode[-2].weight, nn.init.calculate_gain('sigmoid'))
 
     def define_frames_encoder(self, latent_dim=200):
         net = nn.Sequential(
@@ -50,7 +53,7 @@ class Module_dSprites_VAE(nn.Module):
             nn.ConvTranspose2d(32, 32, 4, 2, 1),
             nn.ReLU(True),
             nn.ConvTranspose2d(32, 1, 4, 2, 1),
-            nn.Sigmoid()
+            # nn.Sigmoid()
         )
         return net
 
