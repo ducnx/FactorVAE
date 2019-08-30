@@ -1,5 +1,5 @@
 """solver.py"""
-
+import logging
 import os
 import visdom
 from tqdm import tqdm
@@ -26,7 +26,7 @@ class Solver(object):
         self.print_iter = args.print_iter
         self.global_iter = 0
         self.pbar = tqdm(total=self.max_iter)
-
+        self.logger = logging.getLogger()
         # Data
         self.dset_dir = args.dset_dir
         self.dataset = args.dataset
@@ -170,12 +170,14 @@ class Solver(object):
         data = self.image_gather.data
         true_image = data['true'][0]
         recon_image = data['recon'][0]
-
+        self.logger.info(
+            f'True image stats: min = {true_image.min()}, max = {true_image.max()}, mean = {true_image.mean()}')
+        self.logger.info(
+            f'Reconstruction stats: min = {recon_image.min()}, max = {recon_image.max()}, mean = {recon_image.mean()}')
         true_image = make_grid(true_image)
         recon_image = make_grid(recon_image)
         sample = torch.stack([true_image, recon_image], dim=0)
-        self.viz.images(sample, env=self.name+'/recon_image',
-                        opts=dict(title=str(self.global_iter)))
+        self.viz.images(sample, env=self.name + '/recon_image', opts=dict(title=str(self.global_iter)))
 
     def visualize_line(self):
         data = self.line_gather.data
@@ -317,12 +319,12 @@ class Solver(object):
                 z = z_ori.clone()
                 for val in interpolation:
                     z[:, row] = val
-                    sample = F.sigmoid(decoder(z)).data
+                    sample = torch.sigmoid(decoder(z)).data
                     samples.append(sample)
                     gifs.append(sample)
             samples = torch.cat(samples, dim=0).cpu()
             title = '{}_latent_traversal(iter:{})'.format(key, self.global_iter)
-            self.viz.images(samples, env=self.name+'/traverse',
+            self.viz.images(samples, env=self.name + '/traverse',
                             opts=dict(title=title), nrow=len(interpolation))
 
         if self.output_save:
