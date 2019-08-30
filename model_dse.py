@@ -1,3 +1,5 @@
+import logging
+
 import torch
 from torch import nn
 
@@ -7,6 +9,7 @@ class Module_dSprites_VAE(nn.Module):
         self.channels = channels
         self.filters_first_layer = filters_first_layer
         self.latent_dim = latent_dim
+        self.logger = logging.getLogger()
         super().__init__()
         self.encode = self.define_frames_encoder(latent_dim=self.latent_dim)
         self.decode = self.define_frames_decoder(latent_dim=self.latent_dim)
@@ -53,7 +56,7 @@ class Module_dSprites_VAE(nn.Module):
             nn.ConvTranspose2d(32, 32, 4, 2, 1),
             nn.ReLU(True),
             nn.ConvTranspose2d(32, 1, 4, 2, 1),
-            nn.Sigmoid()
+            # nn.Sigmoid()
         )
         return net
 
@@ -71,4 +74,6 @@ class Module_dSprites_VAE(nn.Module):
             return z.squeeze()
         else:
             x_recon = self.decode(z)
+            self.logger.info(
+                f'Reconstruction stats: min = {x_recon.min()}, max = {x_recon.max()}, mean = {x_recon.mean()}')
             return x_recon, z_mean, z_logvar, z.squeeze()
