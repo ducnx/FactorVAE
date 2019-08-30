@@ -21,67 +21,38 @@ class Module_dSprites_VAE(nn.Module):
                 nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
         nn.init.xavier_normal_(self.decode[-2].weight, nn.init.calculate_gain('sigmoid'))
 
-    def conv_unit(self, in_channels, out_channels, kernel_size, stride=1, padding=0, batch_norm=False,
-                  activation_relu=True):
-        modules = []
-        modules.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding))
-        if batch_norm:
-            modules.append(nn.BatchNorm2d(out_channels))
-        if activation_relu:
-            modules.append(nn.ReLU(True))
-        return nn.Sequential(*modules)
-
     def define_frames_encoder(self, latent_dim=200):
-        modules = []
-        filters = self.filters_first_layer
-        in_ch = self.channels
-        out_ch = filters
-        for _ in range(4):
-            modules.append(self.conv_unit(in_ch, out_ch, 4, 2, 1, batch_norm=True, activation_relu=True))
-            in_ch = out_ch
-            out_ch *= 2
-        modules.append(self.conv_unit(in_ch, in_ch, 4, 1, batch_norm=True, activation_relu=True))
-        modules.append(self.conv_unit(in_ch, latent_dim * 2, 1, batch_norm=False, activation_relu=False))
-        # modules.append(Flatten())
-        # modules = modules + [
-        #     nn.Linear(4 * 4 * self.filters_first_layer * 8, latent_dim * 2),
-        #     nn.BatchNorm1d(latent_dim * 2),
-        #     nn.ReLU(True)
-        # ]
-        return nn.Sequential(*modules)
-
-    def deconv_unit(self, in_channels, out_channels, kernel_size, stride=1, padding=0, batch_norm=False,
-                    activation_relu=True):
-        modules = list()
-        modules.append(nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride, padding))
-        if batch_norm:
-            modules.append(nn.BatchNorm2d(out_channels))
-        if activation_relu:
-            modules.append(nn.ReLU(True))
-        return nn.Sequential(*modules)
+        net = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(32, 32, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(128, 256, kernel_size=4, stride=1),
+            nn.ReLU(True),
+            nn.Conv2d(128, 2 * latent_dim, kernel_size=1)
+        )
+        return net
 
     def define_frames_decoder(self, latent_dim=512):
-        # modules = [
-        #     nn.Linear(latent_dim * 2, 4 * 4 * self.filters_first_layer * 8),
-        #     nn.BatchNorm1d(4 * 4 * self.filters_first_layer * 8),
-        #     nn.ReLU(True),
-        #     Reshape((), (self.filters_first_layer * 8, 4, 4))
-        # ]
-        in_ch = self.filters_first_layer * 8
-        out_ch = int(in_ch) // 2
-        modules = [
-            self.deconv_unit(latent_dim, in_ch, 1, batch_norm=True, activation_relu=True),
-            self.deconv_unit(in_ch, in_ch, 4, batch_norm=True, activation_relu=True)
-        ]
-        for _ in range(3):
-            modules.append(self.deconv_unit(in_ch, out_ch, 4, 2, 1, batch_norm=True, activation_relu=True))
-            in_ch = out_ch
-            out_ch = int(in_ch) // 2
-        modules = modules + [
-            nn.ConvTranspose2d(self.filters_first_layer, self.channels, 4, 2, 1),
+        net = nn.Sequential(
+            nn.Conv2d(latent_dim, 256, 1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(256, 128, 4),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(128, 64, 4, 2, 1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(64, 32, 4, 2, 1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(32, 32, 4, 2, 1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(32, 1, 4, 2, 1),
             nn.Sigmoid()
-        ]
-        return nn.Sequential(*modules)
+        )
+        return net
 
     def reparameterize(self, mu, logvar):
         eps = torch.randn_like(logvar)
