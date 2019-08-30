@@ -33,7 +33,7 @@ class Module_dSprites_VAE(nn.Module):
             nn.ReLU(True),
             nn.Conv2d(128, 256, kernel_size=4, stride=1),
             nn.ReLU(True),
-            nn.Conv2d(128, 2 * latent_dim, kernel_size=1)
+            nn.Conv2d(256, 2 * latent_dim, kernel_size=1)
         )
         return net
 
