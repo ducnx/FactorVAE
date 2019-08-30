@@ -70,6 +70,8 @@ if __name__ == "__main__":
     parser.add_argument('--output_save', default=True, type=str2bool, help='whether to save traverse results')
 
     args = parser.parse_args()
+    if not os.path.exists(f'outputs/{args.name}/'):
+        os.makedirs(f'outputs/{args.name}/', exist_ok=True)
     file_handler = logging.FileHandler(f'outputs/{args.name}/train.log', mode='w')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
