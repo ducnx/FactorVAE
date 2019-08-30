@@ -29,21 +29,21 @@ class Module_dSprites_VAE(nn.Module):
             nn.ReLU(True),
             nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
             nn.ReLU(True),
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
             nn.ReLU(True),
-            nn.Conv2d(128, 256, kernel_size=4, stride=1),
+            nn.Conv2d(64, 128, kernel_size=4, stride=1),
             nn.ReLU(True),
-            nn.Conv2d(256, 2 * latent_dim, kernel_size=1)
+            nn.Conv2d(128, 2 * latent_dim, kernel_size=1)
         )
         return net
 
     def define_frames_decoder(self, latent_dim=512):
         net = nn.Sequential(
-            nn.Conv2d(latent_dim, 256, 1),
+            nn.Conv2d(latent_dim, 128, 1),
             nn.ReLU(True),
-            nn.ConvTranspose2d(256, 128, 4),
+            nn.ConvTranspose2d(128, 64, 4),
             nn.ReLU(True),
-            nn.ConvTranspose2d(128, 64, 4, 2, 1),
+            nn.ConvTranspose2d(64, 64, 4, 2, 1),
             nn.ReLU(True),
             nn.ConvTranspose2d(64, 32, 4, 2, 1),
             nn.ReLU(True),
