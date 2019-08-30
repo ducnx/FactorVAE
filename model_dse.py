@@ -53,7 +53,7 @@ class Module_dSprites_VAE(nn.Module):
             nn.ConvTranspose2d(32, 32, 4, 2, 1),
             nn.ReLU(True),
             nn.ConvTranspose2d(32, 1, 4, 2, 1),
-            # nn.Sigmoid()
+            nn.Sigmoid()
         )
         return net
 
