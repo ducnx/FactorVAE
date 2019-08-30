@@ -25,7 +25,7 @@ class Module_dSprites_VAE(nn.Module):
                 nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
-        # nn.init.xavier_normal_(self.decode[-2].weight, nn.init.calculate_gain('sigmoid'))
+        nn.init.xavier_normal_(self.decode[-2].weight, nn.init.calculate_gain('sigmoid'))
 
     def define_frames_encoder(self, latent_dim=200):
         net = nn.Sequential(
@@ -56,7 +56,7 @@ class Module_dSprites_VAE(nn.Module):
             nn.ConvTranspose2d(32, 32, 4, 2, 1),
             nn.ReLU(True),
             nn.ConvTranspose2d(32, 1, 4, 2, 1),
-            # nn.Sigmoid()
+            nn.Sigmoid()
         )
         return net
 
